@@ -2,14 +2,16 @@
 
 from collections import namedtuple
 import math
+import os
 import os.path as path
 import random
 import sys
 import time
 from PIL import Image # Requires the Pillow library
 
-DISP_WIDTH  = 150
-DISP_HEIGHT = 16
+_geometry = os.getenv('LEDCAT_GEOMETRY', '150x16').split('x')
+DISP_WIDTH  = int(_geometry[0])
+DISP_HEIGHT = int(_geometry[1])
 
 
 tail_colors = [
@@ -28,8 +30,7 @@ def read_image(filename):
 anim_cat = []
 for i in range(0, 6):
 	frame = read_image('%s/cat/%d.png' % (path.dirname(__file__), i))
-	assert frame.size[0] == DISP_WIDTH
-	assert frame.size[1] == DISP_HEIGHT
+	assert (32, 16) == frame.size
 	anim_cat.append(frame)
 anim_sparkle = []
 for i in range(0, 5):
@@ -57,17 +58,21 @@ while True:
 				i = y * DISP_WIDTH + x
 				t = time.time()
 				col_y = y - (DISP_HEIGHT // 2 - len(tail_colors) // 2) + int(math.sin(x / 6 + t * math.pi) * 4 * math.sin(t * 8))
-				if x < 130 and 0 <= col_y < len(tail_colors):
+				if x < (DISP_WIDTH - 10) and 0 <= col_y < len(tail_colors):
 					color = tail_colors[col_y]
 				else:
 					color = (0x0f, 0x4d, 0x8f)
 				frame[i*3:i*3+3] = color
 
-		# Paste animated frame
-		for i in range(DISP_WIDTH * DISP_HEIGHT):
-			pix = anim_frame.getpixel((i % DISP_WIDTH, i / DISP_WIDTH))
-			if pix[3] != 0:
-				frame[i*3:i*3+3] = pix[:3]
+		# Copy animated frame
+		for anim_x in range(anim_frame.size[0]):
+			for anim_y in range(anim_frame.size[1]):
+				pix = anim_frame.getpixel((anim_x, anim_y))
+				if pix[3] != 0: # Test for alpha
+					x = (DISP_WIDTH - anim_frame.size[0]) + anim_x
+					y = (DISP_HEIGHT // 2 - anim_frame.size[1] // 2) + anim_y
+					i = ((y * DISP_WIDTH) + x) * 3
+					frame[i:i+3] = pix[:3]
 
 		# Render and update the sparkles
 		for sp in sparkles:
