@@ -31,3 +31,6 @@ class NyancatSignal(Nyancat):
         for x in range(width):
             amplitude = sum(map(lambda hist: hist[x * WAVE_FACTOR], self.samples_history)) / len(self.samples_history) * 3
             yield int((amplitude * .5 - .5) * self.height) + self.height
+
+    def sleep(self):
+        pass # Handled by a blocking read from the audio source
