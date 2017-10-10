@@ -4,14 +4,14 @@ import sys
 import time
 from PIL import Image # Requires the Pillow library
 
-background_color = (0x0f, 0x4d, 0x8f)
+background_color = (0x07, 0x26, 0x47)
 tail_colors = [
     (0xff, 0x00, 0x00),
     (0xff, 0x99, 0x00),
     (0xff, 0xff, 0x00),
     (0x00, 0xff, 0x00),
-    (0x00, 0x99, 0xff),
-    (0x66, 0x33, 0xff),
+    (0x00, 0x88, 0xcc),
+    (0xaa, 0x00, 0xaa),
 ]
 
 anim_cat = []
@@ -40,8 +40,8 @@ class Nyancat(object):
         self.sparkles = []
 
     def render(self):
-        self.frame_index = (self.frame_index + 1) % len(anim_cat)
-        anim_frame = anim_cat[self.frame_index]
+        self.frame_index = (self.frame_index + 1) % (len(anim_cat) * 2)
+        anim_frame = anim_cat[self.frame_index // 2]
 
         if len(self.sparkles) < 32:
             self.sparkles.append(Sparkle(self.width, self.height))
@@ -52,7 +52,7 @@ class Nyancat(object):
             frame[i*3:i*3+3] = background_color
 
         # Render the tail
-        for (x, tail_y) in enumerate(self.plot_tail(self.width - 10)):
+        for (x, tail_y) in enumerate(self.plot_tail(self.width - 24)):
             for (y, color) in enumerate(tail_colors, tail_y - len(tail_colors) // 2):
                 if 0 <= y < self.height:
                     i = y * self.width + x
